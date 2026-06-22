@@ -1,5 +1,6 @@
 package com.example.usuariosApi.Usuario.Cliente.Controler;
 
+import com.example.usuariosApi.Usuario.Cliente.Dtos.ClienteDto;
 import com.example.usuariosApi.Usuario.Cliente.entity.Cliente;
 import com.example.usuariosApi.Usuario.Cliente.service.ClienteService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,9 @@ public class ClienteController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void salvar(@RequestBody Cliente cliente){
-        Cliente cliente1 = clienteService.salvar(cliente);
+    public ResponseEntity<String> salvar(@RequestBody ClienteDto clienteDto){
+         clienteService.salvar(clienteDto);
+         return ResponseEntity.ok("Cliente criado");
     }
 
 }

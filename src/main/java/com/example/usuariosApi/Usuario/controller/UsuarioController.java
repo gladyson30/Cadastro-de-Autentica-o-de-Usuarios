@@ -3,10 +3,13 @@ package com.example.usuariosApi.Usuario.controller;
 import com.example.usuariosApi.Usuario.Dtos.UsuarioDto;
 import com.example.usuariosApi.Usuario.Dtos.UsuarioReponseDto;
 import com.example.usuariosApi.Usuario.Service.UsuariosService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @RestController
+@Validated
 @RequestMapping("usuarios")
 public class UsuarioController {
 
@@ -21,20 +25,20 @@ public class UsuarioController {
     private UsuariosService usuariosService;
 
     @PostMapping
-    public ResponseEntity<String> salvar(@RequestBody UsuarioDto usuarioDto){
+    public ResponseEntity<String> salvar(@RequestBody @Valid  UsuarioDto usuarioDto){
         usuariosService.salvar(usuarioDto);
         return ResponseEntity.status(201).body("Usuario cadastrado");
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<UsuarioReponseDto> buscar(@PathVariable UUID id){
+    public ResponseEntity<UsuarioReponseDto> buscar(@PathVariable @NotBlank UUID id){
         UsuarioReponseDto usuarioReponseDto = usuariosService.buscar(id);
         return ResponseEntity.ok(usuarioReponseDto);
     }
 
 
     @GetMapping("listar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UsuarioReponseDto>> listar(){
         return ResponseEntity.ok(usuariosService.listar());
     }

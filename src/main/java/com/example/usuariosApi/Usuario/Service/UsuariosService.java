@@ -21,9 +21,9 @@ public class UsuariosService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void salvar(UsuarioDto usuarioDto){
+    public UsuarioReponseDto salvar(UsuarioDto usuarioDto){
         if (usuarioRepository.existsByEmail(usuarioDto.email())) {
-            throw new EmailExistente("Usuarios já tem cadastro");
+            throw new EmailExistente("Email já existente");
         }
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioDto.nome());
@@ -31,10 +31,15 @@ public class UsuariosService {
         usuario.setSenha(passwordEncoder.encode(usuarioDto.senha()));
         usuario.setRoles(usuarioDto.roles());
         usuarioRepository.save(usuario);
+        return new UsuarioReponseDto(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getRoles()
+        );
     }
 
     public UsuarioReponseDto buscar(UUID id) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoExistente(""));
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoExistente("Usuario não existe dentro do sistema"));
         return new UsuarioReponseDto(
                 usuario.getNome(),
                 usuario.getEmail(),
@@ -46,19 +51,19 @@ public class UsuariosService {
        return usuarioRepository.findByEmail(email);
     }
 
-    public void atualizar(UUID id,UsuarioDto usuarioDto){
-        Usuario usuario = new Usuario();
+    public UsuarioReponseDto atualizar(UUID id,UsuarioDto usuarioDto){
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoExistente("usuario não existente"));
 
-        if (usuarioRepository.existsById(id)){
-            throw new UsuarioNaoExistente("");
-        }
-        if (usuarioDto.email() != null && usuarioDto.email().trim().isEmpty()){
+        if (usuarioDto.email() != null && !usuarioDto.email().trim().isEmpty()){
+            if (usuarioRepository.existsByEmail(usuarioDto.email())) {
+                throw new EmailExistente("Email já tem existente");
+            }
             usuario.setEmail(usuarioDto.email());
         }
-        if (usuarioDto.nome() != null && usuarioDto.nome().trim().isEmpty()){
+        if (usuarioDto.nome() != null && !usuarioDto.nome().trim().isEmpty()){
             usuario.setNome(usuarioDto.nome());
         }
-        if (usuarioDto.senha()  != null && usuarioDto.senha().trim().isEmpty()){
+        if (usuarioDto.senha()  != null && !usuarioDto.senha().trim().isEmpty()){
             usuario.setSenha(passwordEncoder.encode(usuarioDto.senha()));
         }
         if (usuarioDto.roles() != null){
@@ -67,7 +72,13 @@ public class UsuariosService {
         if (usuarioRepository.existsByEmail(usuarioDto.email())) {
             throw new EmailExistente("");
         }
+
         usuarioRepository.save(usuario);
+        return new UsuarioReponseDto(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getRoles()
+        );
 
     }
 
@@ -83,8 +94,8 @@ public class UsuariosService {
     }
 
     public void deletar(UUID id){
-        if (usuarioRepository.existsById(id)){
-            throw new UsuarioNaoExistente("");
+        if (!usuarioRepository.existsById(id)){
+            throw new UsuarioNaoExistente("usuario não existente");
         }
         usuarioRepository.deleteById(id);
     }
